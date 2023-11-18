@@ -1,0 +1,33 @@
+#include<bits/stdc++.h>
+using namespace std;
+
+
+int main(){
+    int n;
+    cin>>n;
+    int maxWeight;
+    cin>>maxWeight;
+    vector<int> weight(n); // weight array
+    vector<int> value(n); // value array
+
+    for(int i=0;i<n;i++){
+        cin>>weight[i];
+    }
+    for(int i=0;i<n;i++){
+        cin>>value[i];
+    }
+    vector<vector<int>> dp(n+1,vector<int> (maxWeight+1,0));
+    for(int i=n-1;i>=0;i--){
+        for(int rem=0;rem<=maxWeight;rem++){
+            int notTake=dp[i+1][rem];
+            int take=0;
+            if(weight[i]<=rem){
+                take=value[i]+dp[i+1][rem-weight[i]];
+            }
+            dp[i][rem]=max(take,notTake);
+        }
+    }
+    cout<<dp[0][maxWeight]<<endl;
+    
+    return 0;
+}

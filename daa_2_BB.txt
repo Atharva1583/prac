@@ -1,0 +1,92 @@
+#include<bits/stdc++.h>
+using namespace std;
+
+class Node{
+    public:
+    int level;
+    int value;
+    int weight;
+    vector<int> items;
+    Node(int l,int v,int w,vector<int> it){
+        this->level=l;
+        this->value=v;
+        this->weight=w;
+        this->items=it;
+    }
+};
+
+bool compareItems(const vector<int> &a,vector<int> &b){
+    return (a[0]/a[1]) > (b[0]/b[1]);
+}
+
+int bound(const Node &u,int n,int maxWeight, const vector<vector<int>> &items){
+    if(u.weight>=maxWeight){
+        return 0;
+    }
+    int boundValue=u.value;
+    int j=u.level+1;
+    int totalWeight=u.weight;
+    while(j<n && totalWeight+items[j][1]<=maxWeight){
+        totalWeight+=items[j][1];
+        boundValue+=items[j][0];
+        j++;
+    }
+    if(j<n){
+        boundValue+=(maxWeight-totalWeight)*(items[j][0]/items[j][1]);
+    }
+    return boundValue;
+}
+
+int branchAndBoundKnapsack(int maxWeight,const vector<int> &weights, const vector<int> &values){
+    int n=weights.size();
+    vector<vector<int>> items;
+    // {value, weight, index}
+    for(int i=0;i<n;i++){
+        items.push_back({values[i],weights[i],i});
+    }
+    sort(items.begin(),items.end(),compareItems);
+    vector<int> currentItems(n,0);
+    Node rootNode(-1,0,0,currentItems);
+    queue<Node> q;
+    q.push(rootNode);
+    int maxValue=0;
+    while(!q.empty()){
+        Node u = q.front();
+        q.pop();
+        if(u.level==n-1){
+            continue;
+        }
+        Node take(u.level+1,u.value+values[u.level+1],u.weight+weights[u.level+1],u.items);
+        take.items[u.level+1]=1;
+        Node notTake(u.level+1,u.value,u.weight,u.items);
+        if(bound(notTake,n,maxWeight,items)>maxValue){
+            q.push(notTake);
+        }
+        if(take.weight<=maxWeight && take.value>maxValue){
+            maxValue=take.value;
+        }
+        if(bound(take,n,maxWeight,items)>maxValue){
+            q.push(take);
+        }+
+        
+    }
+    return maxValue;
+}
+int main(){
+
+    int n;
+    cin>>n;
+    vector<int> weights(n);
+    for(int i=0;i<n;i++){
+        cin>>weights[i];
+    }
+    vector<int> values(n);
+    for(int i=0;i<n;i++){
+        cin>>values[i];
+    }
+    int maxWeight;
+    cin>>maxWeight;
+    int ans=branchAndBoundKnapsack(maxWeight,weights,values);
+    cout<<ans<<endl;
+    return 0;
+}
